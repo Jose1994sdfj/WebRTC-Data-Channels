@@ -23,8 +23,8 @@
         #session-link{width:100%;padding:10px;background:#000;border:1px solid #6C4DFF;border-radius:10px;color:#6C4DFF;margin:10px 0;font-size:12px}
         .hidden{display:none}
         .notification{position:fixed;top:20px;right:20px;background:#6C4DFF;padding:15px 25px;border-radius:30px;animation:slideIn 0.3s;z-index:1000}
-        .install-banner{background:#6C4DFF;padding:15px;border-radius:15px;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center}
         .log-panel{background:#000;border-radius:10px;padding:10px;margin-top:10px;font-family:monospace;font-size:11px;max-height:150px;overflow-y:auto}
+        .error-banner{background:rgba(255,50,50,0.2);border:1px solid #ff3333;border-radius:10px;padding:10px;margin-bottom:15px}
         @keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
     </style>
 </head>
@@ -32,17 +32,14 @@
     <div class="app">
         <h1>👥 Team Tasks P2P</h1>
         
-        <div id="install-banner" class="install-banner hidden">
-            <span>📲 Instalar como app</span>
-            <button class="btn" id="install-btn" style="background:white;color:#6C4DFF">Instalar</button>
-        </div>
-        
         <div class="panel">
             <h3>🔗 Conexión P2P</h3>
             
-            <div id="connection-status" style="margin-bottom:15px;padding:10px;background:rgba(255,106,0,0.2);border-radius:10px">
+            <div id="connection-status" style="margin-bottom:15px;padding:10px;background:rgba(108,77,255,0.2);border-radius:10px">
                 ⚡ Estado: <span id="status-text">Desconectado</span>
             </div>
+            
+            <div id="ice-status" style="margin-bottom:15px;padding:5px;font-size:12px;color:#888"></div>
             
             <div id="members-list">
                 <div class="member-item">
@@ -61,12 +58,8 @@
                 <input type="text" id="session-link" readonly>
                 <button class="btn btn-secondary" id="copy-link-btn">📋 Copiar</button>
                 <button class="btn btn-secondary" id="share-link-btn">📤 Compartir</button>
-                <p style="font-size:12px;color:#888;margin-top:10px">
-                    ⚠️ Importante: Abre el link en OTRO dispositivo, no en el mismo.
-                </p>
             </div>
             
-            <!-- Panel de debug -->
             <div class="log-panel" id="log-panel">
                 <div>🟢 Sistema iniciado</div>
             </div>
@@ -109,19 +102,72 @@
         }
         
         // ================================================================
-        // FUNCIÓN DE LOG (para debug)
+        // FUNCIÓN DE LOG
         // ================================================================
-        function log(message) {
+        function log(message, isError = false) {
             console.log(message);
             const panel = document.getElementById('log-panel');
             const div = document.createElement('div');
             div.textContent = message;
+            div.style.color = isError ? '#ff6666' : '#fff';
             panel.appendChild(div);
             panel.scrollTop = panel.scrollHeight;
-            if (panel.children.length > 10) {
+            if (panel.children.length > 15) {
                 panel.removeChild(panel.children[0]);
             }
         }
+        
+        // ================================================================
+        // SERVIDORES ICE (STUN + TURN) - CONFIGURACIÓN ROBUSTA
+        // ================================================================
+        const iceServers = [
+            // STUN de Google (gratuito)
+            { urls: 'stun:stun.l.google.com:19302' },
+            { urls: 'stun:stun1.l.google.com:19302' },
+            { urls: 'stun:stun2.l.google.com:19302' },
+            { urls: 'stun:stun3.l.google.com:19302' },
+            { urls: 'stun:stun4.l.google.com:19302' },
+            
+            // STUN alternativos
+            { urls: 'stun:stun.stunprotocol.org:3478' },
+            { urls: 'stun:stun.voipbuster.com:3478' },
+            
+            // TURN de Metered.ca (gratuito, límite 0.5GB/mes)
+            {
+                urls: 'turn:a.relay.metered.ca:80',
+                username: 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1',
+                credential: 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1'
+            },
+            {
+                urls: 'turn:a.relay.metered.ca:80?transport=tcp',
+                username: 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1',
+                credential: 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1'
+            },
+            {
+                urls: 'turn:a.relay.metered.ca:443',
+                username: 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1',
+                credential: 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1'
+            },
+            {
+                urls: 'turn:a.relay.metered.ca:443?transport=tcp',
+                username: 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1',
+                credential: 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1'
+            },
+            
+            // TURN de OpenRelay (gratuito, público)
+            {
+                urls: 'turn:openrelay.metered.ca:80',
+                username: 'openrelayproject',
+                credential: 'openrelayproject'
+            },
+            {
+                urls: 'turn:openrelay.metered.ca:443',
+                username: 'openrelayproject',
+                credential: 'openrelayproject'
+            }
+        ];
+        
+        log(`🧊 Configurados ${iceServers.length} servidores ICE (STUN + TURN)`);
         
         // ================================================================
         // ESTADO PERSISTENTE
@@ -145,6 +191,7 @@
         
         // UI Elements
         const statusText = document.getElementById('status-text');
+        const iceStatus = document.getElementById('ice-status');
         const membersDiv = document.getElementById('peers-container');
         const sessionInfo = document.getElementById('session-info');
         const sessionLink = document.getElementById('session-link');
@@ -152,67 +199,74 @@
         const assigneeSelect = document.getElementById('assignee-select');
         
         // ================================================================
-        // CREAR SESIÓN - VERSIÓN CORREGIDA
+        // CREAR SESIÓN
         // ================================================================
         async function createSession() {
             log('🔄 Creando sesión...');
             statusText.textContent = 'Creando sesión...';
             
-            // Cerrar conexión anterior si existe
             if (peerConnection) {
                 peerConnection.close();
             }
             
-            peerConnection = new RTCPeerConnection({
-                iceServers: [
-                    { urls: 'stun:stun.l.google.com:19302' },
-                    { urls: 'stun:stun1.l.google.com:19302' }
-                ]
-            });
+            peerConnection = new RTCPeerConnection({ iceServers });
             
-            // Canal de datos
-            dataChannel = peerConnection.createDataChannel('tasks', {
-                ordered: true
-            });
-            
+            dataChannel = peerConnection.createDataChannel('tasks', { ordered: true });
             setupDataChannel(dataChannel);
             
-            // Manejar conexiones entrantes
             peerConnection.ondatachannel = (event) => {
                 log('📥 Canal entrante recibido');
                 setupDataChannel(event.channel);
             };
             
-            // Monitorear estado de conexión
-            peerConnection.onconnectionstatechange = () => {
-                log(`📡 Estado conexión: ${peerConnection.connectionState}`);
-                statusText.textContent = peerConnection.connectionState;
-                
-                if (peerConnection.connectionState === 'connected') {
-                    log('✅ Conexión P2P establecida');
+            // Monitoreo detallado de ICE
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    log(`🧊 Candidato: ${event.candidate.type} ${event.candidate.protocol || ''}`);
+                } else {
+                    log('✅ Recolección de candidatos completada');
                 }
             };
             
             peerConnection.oniceconnectionstatechange = () => {
-                log(`🧊 Estado ICE: ${peerConnection.iceConnectionState}`);
+                const state = peerConnection.iceConnectionState;
+                iceStatus.textContent = `ICE: ${state}`;
+                log(`🧊 Estado ICE: ${state}`);
+                
+                if (state === 'failed') {
+                    log('❌ Conexión ICE fallida - posible problema de firewall', true);
+                    statusText.textContent = 'Error de conexión';
+                } else if (state === 'connected' || state === 'completed') {
+                    log('✅ Conexión ICE establecida');
+                    statusText.textContent = 'Conectado ✓';
+                } else if (state === 'checking') {
+                    statusText.textContent = 'Verificando conexión...';
+                }
             };
             
-            // Crear oferta
+            peerConnection.onconnectionstatechange = () => {
+                const state = peerConnection.connectionState;
+                log(`📡 Estado conexión: ${state}`);
+                
+                if (state === 'connected') {
+                    statusText.textContent = 'Conectado ✓';
+                } else if (state === 'failed') {
+                    log('❌ Conexión fallida', true);
+                    statusText.textContent = 'Conexión fallida';
+                }
+            };
+            
             const offer = await peerConnection.createOffer();
             await peerConnection.setLocalDescription(offer);
             
-            log('📤 Oferta creada, esperando candidatos ICE...');
+            log('📤 Oferta creada, esperando candidatos...');
             
-            // ESPERAR a que todos los candidatos se recolecten
             const candidates = [];
-            
             peerConnection.onicecandidate = (event) => {
                 if (event.candidate) {
                     candidates.push(event.candidate);
-                    log(`🧊 Candidato ICE: ${event.candidate.type}`);
                 } else {
-                    // TODOS LOS CANDIDATOS RECOLECTADOS
-                    log(`✅ ${candidates.length} candidatos ICE recolectados`);
+                    log(`✅ ${candidates.length} candidatos recolectados`);
                     
                     const sessionData = {
                         sdp: peerConnection.localDescription,
@@ -225,14 +279,13 @@
                     sessionLink.value = link;
                     sessionInfo.classList.remove('hidden');
                     
-                    log('🔗 Link generado. Compártelo con OTRO dispositivo');
-                    statusText.textContent = 'Esperando peer...';
+                    log('🔗 Link generado');
                 }
             };
         }
         
         // ================================================================
-        // UNIRSE A SESIÓN - VERSIÓN CORREGIDA
+        // UNIRSE A SESIÓN
         // ================================================================
         async function joinSession(encodedData) {
             log('🔄 Uniéndose a sesión...');
@@ -240,56 +293,50 @@
             
             try {
                 const sessionData = JSON.parse(atob(encodedData));
-                log(`📦 Datos de sesión: ${sessionData.candidates?.length || 0} candidatos`);
+                log(`📦 Datos: ${sessionData.candidates.length} candidatos`);
                 
                 if (peerConnection) {
                     peerConnection.close();
                 }
                 
-                peerConnection = new RTCPeerConnection({
-                    iceServers: [
-                        { urls: 'stun:stun.l.google.com:19302' },
-                        { urls: 'stun:stun1.l.google.com:19302' }
-                    ]
-                });
-                
-                peerConnection.onconnectionstatechange = () => {
-                    log(`📡 Estado conexión: ${peerConnection.connectionState}`);
-                    statusText.textContent = peerConnection.connectionState;
-                };
+                peerConnection = new RTCPeerConnection({ iceServers });
                 
                 peerConnection.oniceconnectionstatechange = () => {
-                    log(`🧊 Estado ICE: ${peerConnection.iceConnectionState}`);
+                    const state = peerConnection.iceConnectionState;
+                    iceStatus.textContent = `ICE: ${state}`;
+                    log(`🧊 Estado ICE: ${state}`);
+                    
+                    if (state === 'connected' || state === 'completed') {
+                        statusText.textContent = 'Conectado ✓';
+                    }
+                };
+                
+                peerConnection.onconnectionstatechange = () => {
+                    log(`📡 Estado: ${peerConnection.connectionState}`);
                 };
                 
                 peerConnection.ondatachannel = (event) => {
-                    log('📥 Canal de datos recibido del oferente');
+                    log('📥 Canal recibido');
                     setupDataChannel(event.channel);
                 };
                 
-                // Establecer descripción remota
                 await peerConnection.setRemoteDescription(sessionData.sdp);
                 log('📥 Oferta remota establecida');
                 
-                // Agregar candidatos
                 for (const candidate of sessionData.candidates) {
                     try {
                         await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
                     } catch(e) {
-                        log(`⚠️ Error agregando candidato: ${e.message}`);
+                        log(`⚠️ Error candidato: ${e.message}`);
                     }
                 }
-                log(`✅ ${sessionData.candidates.length} candidatos agregados`);
                 
-                // Crear respuesta
                 const answer = await peerConnection.createAnswer();
                 await peerConnection.setLocalDescription(answer);
                 log('📤 Respuesta enviada');
                 
-                statusText.textContent = 'Conectado';
-                
             } catch(e) {
-                log(`❌ Error al unirse: ${e.message}`);
+                log(`❌ Error: ${e.message}`, true);
                 alert('Error al unirse: ' + e.message);
             }
         }
@@ -301,10 +348,9 @@
             const peerId = 'peer-' + Date.now();
             
             channel.onopen = () => {
-                log('📡 Canal de datos ABIERTO');
+                log('📡 Canal ABIERTO');
                 statusText.textContent = 'Conectado ✓';
                 
-                // Enviar mi información
                 channel.send(JSON.stringify({
                     type: 'info',
                     peerId: myId,
@@ -318,7 +364,6 @@
             channel.onmessage = (event) => {
                 try {
                     const msg = JSON.parse(event.data);
-                    log(`📨 Mensaje recibido: ${msg.type}`);
                     
                     if (msg.type === 'info') {
                         peers.set(msg.peerId, { channel, name: msg.name });
@@ -331,7 +376,7 @@
                             tasks.push(msg.task);
                             renderTasks();
                             if (msg.task.assigneeId === myId) {
-                                showNotification(`📋 Nueva tarea: ${msg.task.title}`);
+                                showNotification(`📋 ${msg.task.title}`);
                             }
                         }
                         
@@ -343,19 +388,15 @@
                         }
                     }
                 } catch(e) {
-                    log(`❌ Error parseando mensaje: ${e.message}`);
+                    log(`❌ Error mensaje: ${e.message}`);
                 }
             };
             
             channel.onclose = () => {
-                log('📡 Canal de datos CERRADO');
+                log('📡 Canal CERRADO');
                 peers.delete(peerId);
                 updateMembersList();
                 updateAssigneeSelect();
-            };
-            
-            channel.onerror = (e) => {
-                log(`❌ Error en canal: ${e.message}`);
             };
             
             peers.set(peerId, { channel, name: 'Conectando...' });
@@ -374,7 +415,7 @@
         
         function updateMembersList() {
             let html = '';
-            peers.forEach((peer, id) => {
+            peers.forEach((peer) => {
                 html += `<div class="member-item">
                     <span>👤 ${peer.name}</span>
                     <span class="status-dot ${peer.channel.readyState === 'open' ? 'connected' : ''}"></span>
@@ -424,11 +465,7 @@
             
             tasks.push(task);
             renderTasks();
-            
-            broadcast({
-                type: 'new-task',
-                task: task
-            });
+            broadcast({ type: 'new-task', task: task });
         }
         
         window.completeTask = function(taskId) {
@@ -436,10 +473,7 @@
             if (task) {
                 task.completed = true;
                 renderTasks();
-                broadcast({
-                    type: 'complete-task',
-                    taskId: taskId
-                });
+                broadcast({ type: 'complete-task', taskId: taskId });
             }
         };
         
@@ -503,27 +537,10 @@
             }
         });
         
-        // PWA Install
-        let deferredPrompt;
-        window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault();
-            deferredPrompt = e;
-            document.getElementById('install-banner').classList.remove('hidden');
-        });
-        
-        document.getElementById('install-btn').addEventListener('click', async () => {
-            if (deferredPrompt) {
-                deferredPrompt.prompt();
-                await deferredPrompt.userChoice;
-                deferredPrompt = null;
-                document.getElementById('install-banner').classList.add('hidden');
-            }
-        });
-        
         // Verificar link en URL
         const params = new URLSearchParams(window.location.search);
         if (params.has('join')) {
-            log('🔗 Detectado link de unión en URL');
+            log('🔗 Link de unión detectado');
             setTimeout(() => {
                 if (confirm('¿Unirse a esta sesión?')) {
                     joinSession(params.get('join'));
@@ -532,12 +549,11 @@
             window.history.replaceState({}, document.title, window.location.pathname);
         }
         
-        // Inicializar
         updateAssigneeSelect();
         renderTasks();
         
         log(`✅ Sistema listo. ID: ${myId}`);
-        log(`📱 Abre esta misma URL en OTRO dispositivo`);
+        log(`🔧 TURN configurado para máxima compatibilidad`);
         
     </script>
 </body>
