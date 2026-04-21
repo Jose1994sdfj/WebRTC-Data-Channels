@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Team Tasks P2P · WebRTC</title>
+    <title>Team Tasks · Conexión Garantizada</title>
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="theme-color" content="#0A0A0A">
-    <link rel="manifest" id="manifest-placeholder">
     <style>
         *{margin:0;padding:0;box-sizing:border-box}
         body{font-family:system-ui,sans-serif;background:#0A0A0A;min-height:100vh;color:#FFF;padding:16px}
@@ -15,60 +14,56 @@
         .panel{background:rgba(255,255,255,0.05);border-radius:20px;padding:20px;margin-bottom:20px;border:1px solid rgba(255,255,255,0.1)}
         .btn{background:#6C4DFF;color:white;border:none;padding:12px 20px;border-radius:25px;cursor:pointer;margin:5px;font-size:14px}
         .btn-secondary{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2)}
+        .btn-success{background:#00C853}
         .task-input{width:100%;padding:12px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);border-radius:25px;color:white;margin-bottom:10px}
-        .task-item{display:flex;justify-content:space-between;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px;margin-bottom:8px}
+        .task-item{display:flex;justify-content:space-between;align-items:center;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px;margin-bottom:8px}
         .member-item{display:flex;justify-content:space-between;padding:8px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:5px}
         .status-dot{width:10px;height:10px;border-radius:50%;background:#FF6D00;display:inline-block}
         .status-dot.connected{background:#00C853}
-        #session-link{width:100%;padding:10px;background:#000;border:1px solid #6C4DFF;border-radius:10px;color:#6C4DFF;margin:10px 0;font-size:12px}
-        .hidden{display:none}
+        .room-id{font-family:monospace;background:#000;padding:8px;border-radius:8px;text-align:center;margin:10px 0}
         .notification{position:fixed;top:20px;right:20px;background:#6C4DFF;padding:15px 25px;border-radius:30px;animation:slideIn 0.3s;z-index:1000}
-        .log-panel{background:#000;border-radius:10px;padding:10px;margin-top:10px;font-family:monospace;font-size:11px;max-height:150px;overflow-y:auto}
-        .error-banner{background:rgba(255,50,50,0.2);border:1px solid #ff3333;border-radius:10px;padding:10px;margin-bottom:15px}
+        .hidden{display:none}
         @keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
+        select{width:100%;padding:12px;background:#000;color:white;border:1px solid rgba(255,255,255,0.2);border-radius:25px;margin-bottom:10px}
     </style>
 </head>
 <body>
     <div class="app">
-        <h1>👥 Team Tasks P2P</h1>
+        <h1>👥 Team Tasks</h1>
         
         <div class="panel">
-            <h3>🔗 Conexión P2P</h3>
-            
-            <div id="connection-status" style="margin-bottom:15px;padding:10px;background:rgba(108,77,255,0.2);border-radius:10px">
-                ⚡ Estado: <span id="status-text">Desconectado</span>
+            <div style="display:flex;align-items:center;gap:10px;margin-bottom:15px">
+                <span class="status-dot" id="connection-dot"></span>
+                <span id="connection-status">Desconectado</span>
             </div>
             
-            <div id="ice-status" style="margin-bottom:15px;padding:5px;font-size:12px;color:#888"></div>
-            
-            <div id="members-list">
-                <div class="member-item">
-                    <span>👤 <span id="my-name-display">Yo</span> (Tú)</span>
-                    <span class="status-dot connected"></span>
-                </div>
-            </div>
-            <div id="peers-container"></div>
-            
-            <button class="btn" id="create-session-btn">🔗 Crear Sesión</button>
-            <button class="btn btn-secondary" id="join-session-btn">📥 Unirse a Sesión</button>
-            <button class="btn btn-secondary" id="change-name-btn">✏️ Cambiar Nombre</button>
-            
-            <div id="session-info" class="hidden">
-                <p>📤 Comparte este link con OTRO dispositivo:</p>
-                <input type="text" id="session-link" readonly>
-                <button class="btn btn-secondary" id="copy-link-btn">📋 Copiar</button>
-                <button class="btn btn-secondary" id="share-link-btn">📤 Compartir</button>
+            <div style="margin-bottom:15px">
+                <label>Tu nombre:</label>
+                <input type="text" id="name-input" class="task-input" style="margin-top:5px">
             </div>
             
-            <div class="log-panel" id="log-panel">
-                <div>🟢 Sistema iniciado</div>
+            <div style="margin-bottom:15px">
+                <label>Sala (mismo nombre = mismo equipo):</label>
+                <input type="text" id="room-input" class="task-input" style="margin-top:5px" placeholder="ej: equipo-ventas">
             </div>
+            
+            <button class="btn btn-success" id="connect-btn">🔌 Conectar al Equipo</button>
+            
+            <div id="room-info" class="hidden">
+                <p style="margin-top:15px">🏠 Sala: <strong id="room-name-display"></strong></p>
+                <p>👥 Miembros conectados: <span id="member-count">1</span></p>
+            </div>
+        </div>
+        
+        <div class="panel">
+            <h3>👤 Miembros del Equipo</h3>
+            <div id="members-list"></div>
         </div>
         
         <div class="panel">
             <h3>📋 Tareas</h3>
             <input type="text" class="task-input" id="task-input" placeholder="Nueva tarea...">
-            <select id="assignee-select" style="width:100%;padding:10px;background:#000;color:white;border-radius:25px;margin-bottom:10px">
+            <select id="assignee-select">
                 <option value="">Asignar a...</option>
             </select>
             <button class="btn" id="add-task-btn">➕ Añadir Tarea</button>
@@ -81,354 +76,207 @@
 
     <script>
         // ================================================================
-        // CONFIGURACIÓN PWA
+        // CONFIGURACIÓN
         // ================================================================
-        const manifest = {
-            name: "Team Tasks P2P",
-            short_name: "TeamTasks",
-            theme_color: "#0A0A0A",
-            background_color: "#0A0A0A",
-            display: "standalone",
-            start_url: "/",
-            icons: [{
-                src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230A0A0A'/%3E%3Ctext x='50' y='65' font-size='45' text-anchor='middle' fill='%236C4DFF'%3E👥%3C/text%3E%3C/svg%3E",
-                sizes: "192x192"
-            }]
-        };
-        document.getElementById('manifest-placeholder').href = 'data:application/manifest+json,' + encodeURIComponent(JSON.stringify(manifest));
         
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register("data:application/javascript,self.addEventListener('fetch',e=>e.respondWith(fetch(e.request)))");
-        }
+        // Servidor WebSocket PÚBLICO (gratuito)
+        const WS_URL = 'wss://broadcast-channel-server.onrender.com';
         
-        // ================================================================
-        // FUNCIÓN DE LOG
-        // ================================================================
-        function log(message, isError = false) {
-            console.log(message);
-            const panel = document.getElementById('log-panel');
-            const div = document.createElement('div');
-            div.textContent = message;
-            div.style.color = isError ? '#ff6666' : '#fff';
-            panel.appendChild(div);
-            panel.scrollTop = panel.scrollHeight;
-            if (panel.children.length > 15) {
-                panel.removeChild(panel.children[0]);
-            }
-        }
-        
-        // ================================================================
-        // SERVIDORES ICE (STUN + TURN) - CONFIGURACIÓN ROBUSTA
-        // ================================================================
-        const iceServers = [
-            // STUN de Google (gratuito)
-            { urls: 'stun:stun.l.google.com:19302' },
-            { urls: 'stun:stun1.l.google.com:19302' },
-            { urls: 'stun:stun2.l.google.com:19302' },
-            { urls: 'stun:stun3.l.google.com:19302' },
-            { urls: 'stun:stun4.l.google.com:19302' },
-            
-            // STUN alternativos
-            { urls: 'stun:stun.stunprotocol.org:3478' },
-            { urls: 'stun:stun.voipbuster.com:3478' },
-            
-            // TURN de Metered.ca (gratuito, límite 0.5GB/mes)
-            {
-                urls: 'turn:a.relay.metered.ca:80',
-                username: 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1',
-                credential: 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1'
-            },
-            {
-                urls: 'turn:a.relay.metered.ca:80?transport=tcp',
-                username: 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1',
-                credential: 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1'
-            },
-            {
-                urls: 'turn:a.relay.metered.ca:443',
-                username: 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1',
-                credential: 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1'
-            },
-            {
-                urls: 'turn:a.relay.metered.ca:443?transport=tcp',
-                username: 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1',
-                credential: 'a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1a1'
-            },
-            
-            // TURN de OpenRelay (gratuito, público)
-            {
-                urls: 'turn:openrelay.metered.ca:80',
-                username: 'openrelayproject',
-                credential: 'openrelayproject'
-            },
-            {
-                urls: 'turn:openrelay.metered.ca:443',
-                username: 'openrelayproject',
-                credential: 'openrelayproject'
-            }
-        ];
-        
-        log(`🧊 Configurados ${iceServers.length} servidores ICE (STUN + TURN)`);
-        
-        // ================================================================
-        // ESTADO PERSISTENTE
-        // ================================================================
-        let myId = localStorage.getItem('p2p-id');
-        if (!myId) {
-            myId = 'device-' + Math.random().toString(36).substr(2, 9);
-            localStorage.setItem('p2p-id', myId);
-        }
-        
-        let myName = localStorage.getItem('p2p-name') || 'Usuario' + Math.floor(Math.random()*100);
-        localStorage.setItem('p2p-name', myName);
-        
-        document.getElementById('my-name-display').textContent = myName;
-        
-        // Estado WebRTC
-        let peerConnection = null;
-        let dataChannel = null;
-        const peers = new Map();
+        // Estado
+        let ws = null;
+        let myName = localStorage.getItem('team-name') || '';
+        let myId = localStorage.getItem('team-id');
+        let currentRoom = localStorage.getItem('team-room') || '';
+        let connected = false;
+        let members = new Map();
         let tasks = [];
         
+        if (!myId) {
+            myId = 'user-' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('team-id', myId);
+        }
+        
         // UI Elements
-        const statusText = document.getElementById('status-text');
-        const iceStatus = document.getElementById('ice-status');
-        const membersDiv = document.getElementById('peers-container');
-        const sessionInfo = document.getElementById('session-info');
-        const sessionLink = document.getElementById('session-link');
+        const nameInput = document.getElementById('name-input');
+        const roomInput = document.getElementById('room-input');
+        const connectBtn = document.getElementById('connect-btn');
+        const connectionDot = document.getElementById('connection-dot');
+        const connectionStatus = document.getElementById('connection-status');
+        const roomInfo = document.getElementById('room-info');
+        const roomNameDisplay = document.getElementById('room-name-display');
+        const memberCount = document.getElementById('member-count');
+        const membersList = document.getElementById('members-list');
         const taskList = document.getElementById('task-list');
         const assigneeSelect = document.getElementById('assignee-select');
+        const taskInput = document.getElementById('task-input');
+        
+        // Cargar datos guardados
+        nameInput.value = myName;
+        roomInput.value = currentRoom;
         
         // ================================================================
-        // CREAR SESIÓN
+        // CONEXIÓN WEBSOCKET
         // ================================================================
-        async function createSession() {
-            log('🔄 Creando sesión...');
-            statusText.textContent = 'Creando sesión...';
+        
+        function connect() {
+            const name = nameInput.value.trim();
+            const room = roomInput.value.trim();
             
-            if (peerConnection) {
-                peerConnection.close();
+            if (!name || !room) {
+                alert('Por favor ingresa tu nombre y una sala');
+                return;
             }
             
-            peerConnection = new RTCPeerConnection({ iceServers });
+            myName = name;
+            currentRoom = room;
+            localStorage.setItem('team-name', myName);
+            localStorage.setItem('team-room', currentRoom);
             
-            dataChannel = peerConnection.createDataChannel('tasks', { ordered: true });
-            setupDataChannel(dataChannel);
-            
-            peerConnection.ondatachannel = (event) => {
-                log('📥 Canal entrante recibido');
-                setupDataChannel(event.channel);
-            };
-            
-            // Monitoreo detallado de ICE
-            peerConnection.onicecandidate = (event) => {
-                if (event.candidate) {
-                    log(`🧊 Candidato: ${event.candidate.type} ${event.candidate.protocol || ''}`);
-                } else {
-                    log('✅ Recolección de candidatos completada');
-                }
-            };
-            
-            peerConnection.oniceconnectionstatechange = () => {
-                const state = peerConnection.iceConnectionState;
-                iceStatus.textContent = `ICE: ${state}`;
-                log(`🧊 Estado ICE: ${state}`);
-                
-                if (state === 'failed') {
-                    log('❌ Conexión ICE fallida - posible problema de firewall', true);
-                    statusText.textContent = 'Error de conexión';
-                } else if (state === 'connected' || state === 'completed') {
-                    log('✅ Conexión ICE establecida');
-                    statusText.textContent = 'Conectado ✓';
-                } else if (state === 'checking') {
-                    statusText.textContent = 'Verificando conexión...';
-                }
-            };
-            
-            peerConnection.onconnectionstatechange = () => {
-                const state = peerConnection.connectionState;
-                log(`📡 Estado conexión: ${state}`);
-                
-                if (state === 'connected') {
-                    statusText.textContent = 'Conectado ✓';
-                } else if (state === 'failed') {
-                    log('❌ Conexión fallida', true);
-                    statusText.textContent = 'Conexión fallida';
-                }
-            };
-            
-            const offer = await peerConnection.createOffer();
-            await peerConnection.setLocalDescription(offer);
-            
-            log('📤 Oferta creada, esperando candidatos...');
-            
-            const candidates = [];
-            peerConnection.onicecandidate = (event) => {
-                if (event.candidate) {
-                    candidates.push(event.candidate);
-                } else {
-                    log(`✅ ${candidates.length} candidatos recolectados`);
-                    
-                    const sessionData = {
-                        sdp: peerConnection.localDescription,
-                        candidates: candidates
-                    };
-                    
-                    const encoded = btoa(JSON.stringify(sessionData));
-                    const link = window.location.origin + window.location.pathname + '?join=' + encoded;
-                    
-                    sessionLink.value = link;
-                    sessionInfo.classList.remove('hidden');
-                    
-                    log('🔗 Link generado');
-                }
-            };
-        }
-        
-        // ================================================================
-        // UNIRSE A SESIÓN
-        // ================================================================
-        async function joinSession(encodedData) {
-            log('🔄 Uniéndose a sesión...');
-            statusText.textContent = 'Uniéndose...';
-            
-            try {
-                const sessionData = JSON.parse(atob(encodedData));
-                log(`📦 Datos: ${sessionData.candidates.length} candidatos`);
-                
-                if (peerConnection) {
-                    peerConnection.close();
-                }
-                
-                peerConnection = new RTCPeerConnection({ iceServers });
-                
-                peerConnection.oniceconnectionstatechange = () => {
-                    const state = peerConnection.iceConnectionState;
-                    iceStatus.textContent = `ICE: ${state}`;
-                    log(`🧊 Estado ICE: ${state}`);
-                    
-                    if (state === 'connected' || state === 'completed') {
-                        statusText.textContent = 'Conectado ✓';
-                    }
-                };
-                
-                peerConnection.onconnectionstatechange = () => {
-                    log(`📡 Estado: ${peerConnection.connectionState}`);
-                };
-                
-                peerConnection.ondatachannel = (event) => {
-                    log('📥 Canal recibido');
-                    setupDataChannel(event.channel);
-                };
-                
-                await peerConnection.setRemoteDescription(sessionData.sdp);
-                log('📥 Oferta remota establecida');
-                
-                for (const candidate of sessionData.candidates) {
-                    try {
-                        await peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-                    } catch(e) {
-                        log(`⚠️ Error candidato: ${e.message}`);
-                    }
-                }
-                
-                const answer = await peerConnection.createAnswer();
-                await peerConnection.setLocalDescription(answer);
-                log('📤 Respuesta enviada');
-                
-            } catch(e) {
-                log(`❌ Error: ${e.message}`, true);
-                alert('Error al unirse: ' + e.message);
+            if (ws) {
+                ws.close();
             }
-        }
-        
-        // ================================================================
-        // CONFIGURAR DATA CHANNEL
-        // ================================================================
-        function setupDataChannel(channel) {
-            const peerId = 'peer-' + Date.now();
             
-            channel.onopen = () => {
-                log('📡 Canal ABIERTO');
-                statusText.textContent = 'Conectado ✓';
+            connectionStatus.textContent = 'Conectando...';
+            connectionDot.style.background = '#FF6D00';
+            
+            ws = new WebSocket(WS_URL);
+            
+            ws.onopen = () => {
+                console.log('✅ Conectado al servidor');
                 
-                channel.send(JSON.stringify({
-                    type: 'info',
-                    peerId: myId,
-                    name: myName
+                // Unirse a la sala
+                ws.send(JSON.stringify({
+                    type: 'join',
+                    room: currentRoom,
+                    name: myName,
+                    userId: myId
                 }));
                 
-                updateMembersList();
-                updateAssigneeSelect();
+                connected = true;
+                connectionStatus.textContent = 'Conectado ✓';
+                connectionDot.style.background = '#00C853';
+                roomInfo.classList.remove('hidden');
+                roomNameDisplay.textContent = currentRoom;
+                
+                showNotification('✅ Conectado al equipo');
             };
             
-            channel.onmessage = (event) => {
+            ws.onmessage = (event) => {
                 try {
                     const msg = JSON.parse(event.data);
+                    handleMessage(msg);
+                } catch(e) {
+                    console.error('Error parseando mensaje:', e);
+                }
+            };
+            
+            ws.onclose = () => {
+                console.log('❌ Desconectado');
+                connected = false;
+                connectionStatus.textContent = 'Desconectado';
+                connectionDot.style.background = '#FF6D00';
+                members.clear();
+                updateMembersList();
+            };
+            
+            ws.onerror = (error) => {
+                console.error('Error WebSocket:', error);
+                connectionStatus.textContent = 'Error de conexión';
+                showNotification('❌ Error de conexión');
+            };
+        }
+        
+        function handleMessage(msg) {
+            switch(msg.type) {
+                case 'room-info':
+                    // Lista de miembros en la sala
+                    members.clear();
+                    msg.members.forEach(m => {
+                        members.set(m.userId, m);
+                    });
+                    updateMembersList();
+                    updateAssigneeSelect();
+                    break;
                     
-                    if (msg.type === 'info') {
-                        peers.set(msg.peerId, { channel, name: msg.name });
-                        updateMembersList();
-                        updateAssigneeSelect();
-                        showNotification(`👋 ${msg.name} se conectó`);
-                        
-                    } else if (msg.type === 'new-task') {
-                        if (!tasks.find(t => t.id === msg.task.id)) {
-                            tasks.push(msg.task);
-                            renderTasks();
-                            if (msg.task.assigneeId === myId) {
-                                showNotification(`📋 ${msg.task.title}`);
-                            }
-                        }
-                        
-                    } else if (msg.type === 'complete-task') {
-                        const task = tasks.find(t => t.id === msg.taskId);
-                        if (task) {
-                            task.completed = true;
-                            renderTasks();
+                case 'member-joined':
+                    members.set(msg.member.userId, msg.member);
+                    updateMembersList();
+                    updateAssigneeSelect();
+                    showNotification(`👋 ${msg.member.name} se unió`);
+                    break;
+                    
+                case 'member-left':
+                    members.delete(msg.userId);
+                    updateMembersList();
+                    updateAssigneeSelect();
+                    break;
+                    
+                case 'new-task':
+                    if (!tasks.find(t => t.id === msg.task.id)) {
+                        tasks.push(msg.task);
+                        renderTasks();
+                        if (msg.task.assigneeId === myId) {
+                            showNotification(`📋 Nueva tarea: ${msg.task.title}`);
                         }
                     }
-                } catch(e) {
-                    log(`❌ Error mensaje: ${e.message}`);
-                }
-            };
-            
-            channel.onclose = () => {
-                log('📡 Canal CERRADO');
-                peers.delete(peerId);
-                updateMembersList();
-                updateAssigneeSelect();
-            };
-            
-            peers.set(peerId, { channel, name: 'Conectando...' });
+                    break;
+                    
+                case 'complete-task':
+                    const task = tasks.find(t => t.id === msg.taskId);
+                    if (task) {
+                        task.completed = true;
+                        renderTasks();
+                    }
+                    break;
+                    
+                case 'task-sync':
+                    msg.tasks.forEach(t => {
+                        if (!tasks.find(ex => ex.id === t.id)) {
+                            tasks.push(t);
+                        }
+                    });
+                    renderTasks();
+                    break;
+                    
+                case 'error':
+                    alert(msg.message);
+                    break;
+            }
+        }
+        
+        function send(message) {
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(JSON.stringify(message));
+            }
         }
         
         // ================================================================
-        // FUNCIONES AUXILIARES
+        // UI
         // ================================================================
-        function broadcast(msg) {
-            peers.forEach(peer => {
-                if (peer.channel.readyState === 'open') {
-                    peer.channel.send(JSON.stringify(msg));
-                }
-            });
-        }
         
         function updateMembersList() {
-            let html = '';
-            peers.forEach((peer) => {
+            memberCount.textContent = members.size + 1;
+            
+            let html = `<div class="member-item">
+                <span>👤 ${myName} (Tú)</span>
+                <span class="status-dot connected"></span>
+            </div>`;
+            
+            members.forEach(member => {
                 html += `<div class="member-item">
-                    <span>👤 ${peer.name}</span>
-                    <span class="status-dot ${peer.channel.readyState === 'open' ? 'connected' : ''}"></span>
+                    <span>👤 ${member.name}</span>
+                    <span class="status-dot connected"></span>
                 </div>`;
             });
-            membersDiv.innerHTML = html;
+            
+            membersList.innerHTML = html;
         }
         
         function updateAssigneeSelect() {
             let options = '<option value="">Asignar a...</option>';
             options += `<option value="${myId}">${myName} (Yo)</option>`;
-            peers.forEach((peer, id) => {
-                options += `<option value="${id}">${peer.name}</option>`;
+            members.forEach((member, id) => {
+                options += `<option value="${id}">${member.name}</option>`;
             });
             assigneeSelect.innerHTML = options;
         }
@@ -440,12 +288,12 @@
             }
             
             taskList.innerHTML = tasks.map(task => {
-                const assigneeName = task.assigneeId === myId ? myName : 
-                                   (peers.get(task.assigneeId)?.name || 'Desconocido');
+                const assignee = task.assigneeId === myId ? myName : 
+                                (members.get(task.assigneeId)?.name || 'Desconocido');
                 return `<div class="task-item" style="opacity:${task.completed?0.5:1}">
                     <div>
-                        <div>${task.title}</div>
-                        <small style="color:#6C4DFF">👤 ${assigneeName}</small>
+                        <div style="font-weight:500">${task.title}</div>
+                        <small style="color:#6C4DFF">👤 ${assignee}</small>
                     </div>
                     <div>
                         ${task.assigneeId === myId && !task.completed ? 
@@ -457,15 +305,22 @@
         
         function addTask(title, assigneeId) {
             const task = {
-                id: 'task-' + Date.now(),
+                id: 'task-' + Date.now() + '-' + Math.random().toString(36),
                 title: title,
                 assigneeId: assigneeId || myId,
-                completed: false
+                createdBy: myId,
+                completed: false,
+                createdAt: new Date().toISOString()
             };
             
             tasks.push(task);
             renderTasks();
-            broadcast({ type: 'new-task', task: task });
+            
+            send({
+                type: 'new-task',
+                room: currentRoom,
+                task: task
+            });
         }
         
         window.completeTask = function(taskId) {
@@ -473,7 +328,11 @@
             if (task) {
                 task.completed = true;
                 renderTasks();
-                broadcast({ type: 'complete-task', taskId: taskId });
+                send({
+                    type: 'complete-task',
+                    room: currentRoom,
+                    taskId: taskId
+                });
             }
         };
         
@@ -488,72 +347,29 @@
         // ================================================================
         // EVENT LISTENERS
         // ================================================================
-        document.getElementById('create-session-btn').addEventListener('click', createSession);
         
-        document.getElementById('join-session-btn').addEventListener('click', () => {
-            const link = prompt('Pega el link de la sesión:');
-            if (link) {
-                const url = new URL(link);
-                const encoded = url.searchParams.get('join');
-                if (encoded) joinSession(encoded);
-            }
-        });
-        
-        document.getElementById('change-name-btn').addEventListener('click', () => {
-            const newName = prompt('Tu nombre:', myName);
-            if (newName) {
-                myName = newName;
-                localStorage.setItem('p2p-name', newName);
-                document.getElementById('my-name-display').textContent = myName;
-                updateAssigneeSelect();
-            }
-        });
-        
-        document.getElementById('copy-link-btn').addEventListener('click', () => {
-            sessionLink.select();
-            document.execCommand('copy');
-            showNotification('📋 Link copiado');
-        });
-        
-        document.getElementById('share-link-btn').addEventListener('click', async () => {
-            const link = sessionLink.value;
-            if (navigator.share) {
-                try {
-                    await navigator.share({ title: 'Team Tasks', text: 'Únete', url: link });
-                } catch(e) {}
-            } else {
-                sessionLink.select();
-                document.execCommand('copy');
-                showNotification('📋 Link copiado');
-            }
-        });
+        connectBtn.addEventListener('click', connect);
         
         document.getElementById('add-task-btn').addEventListener('click', () => {
-            const input = document.getElementById('task-input');
-            const title = input.value.trim();
-            if (title) {
-                addTask(title, assigneeSelect.value);
-                input.value = '';
+            const title = taskInput.value.trim();
+            if (!title) {
+                alert('Escribe una tarea');
+                return;
             }
+            if (!connected) {
+                alert('Conéctate primero al equipo');
+                return;
+            }
+            addTask(title, assigneeSelect.value);
+            taskInput.value = '';
         });
         
-        // Verificar link en URL
-        const params = new URLSearchParams(window.location.search);
-        if (params.has('join')) {
-            log('🔗 Link de unión detectado');
-            setTimeout(() => {
-                if (confirm('¿Unirse a esta sesión?')) {
-                    joinSession(params.get('join'));
-                }
-            }, 500);
-            window.history.replaceState({}, document.title, window.location.pathname);
+        // Auto-conectar si hay datos guardados
+        if (myName && currentRoom) {
+            setTimeout(connect, 500);
         }
         
-        updateAssigneeSelect();
-        renderTasks();
-        
-        log(`✅ Sistema listo. ID: ${myId}`);
-        log(`🔧 TURN configurado para máxima compatibilidad`);
+        console.log('🟢 Sistema listo. ID:', myId);
         
     </script>
 </body>
