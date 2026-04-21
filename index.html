@@ -3,800 +3,543 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>J3W Team Tasks · Asignación P2P</title>
+    <title>Team Tasks P2P</title>
+    
+    <!-- PWA Meta Tags -->
     <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Team Tasks">
+    <meta name="theme-color" content="#0A0A0A">
+    
+    <!-- Manifest PWA -->
+    <link rel="manifest" id="manifest-placeholder">
     
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: system-ui, -apple-system, sans-serif;
-            background: linear-gradient(135deg, #0A0A0A 0%, #1A1A1A 100%);
-            min-height: 100vh;
-            color: #FFFFFF;
-            padding: 16px;
-        }
-
-        .app {
-            max-width: 600px;
-            margin: 0 auto;
-        }
-
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 24px;
-        }
-
-        h1 {
-            font-size: 1.8rem;
-            background: linear-gradient(135deg, #6C4DFF, #00D2FF);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .device-badge {
-            background: rgba(108, 77, 255, 0.2);
-            padding: 8px 16px;
-            border-radius: 20px;
-            font-size: 14px;
-            border: 1px solid rgba(108, 77, 255, 0.3);
-        }
-
-        .connection-panel {
-            background: rgba(255,255,255,0.05);
-            border-radius: 20px;
-            padding: 20px;
-            margin-bottom: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .team-section {
-            margin-bottom: 16px;
-        }
-
-        .team-section h3 {
-            color: #888;
-            font-size: 14px;
-            margin-bottom: 12px;
-        }
-
-        .member-list {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .member-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 12px;
-            background: rgba(255,255,255,0.05);
-            border-radius: 12px;
-        }
-
-        .member-info {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .member-avatar {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 20px;
-        }
-
-        .member-name {
-            font-weight: 500;
-        }
-
-        .member-status {
-            font-size: 12px;
-            color: #888;
-        }
-
-        .status-dot {
-            width: 10px;
-            height: 10px;
-            border-radius: 50%;
-            background: #FF6D00;
-        }
-
-        .status-dot.connected {
-            background: #00C853;
-        }
-
-        .btn {
-            background: #6C4DFF;
-            color: white;
-            border: none;
-            padding: 12px 20px;
-            border-radius: 25px;
-            font-size: 14px;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
-
-        .btn-secondary {
-            background: rgba(255,255,255,0.1);
-            border: 1px solid rgba(255,255,255,0.2);
-        }
-
-        .btn-small {
-            padding: 6px 12px;
-            font-size: 12px;
-        }
-
-        .btn:hover {
-            transform: scale(1.02);
-        }
-
-        .tasks-section {
-            background: rgba(255,255,255,0.05);
-            border-radius: 20px;
-            padding: 20px;
-            border: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .task-form {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .task-input {
-            flex: 1;
-            padding: 12px 16px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 25px;
-            color: white;
-            font-size: 14px;
-        }
-
-        .task-input::placeholder {
-            color: #666;
-        }
-
-        .task-select {
-            padding: 12px 16px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 25px;
-            color: white;
-            font-size: 14px;
-        }
-
-        .task-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-        }
-
-        .task-item {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px;
-            background: rgba(255,255,255,0.03);
-            border-radius: 12px;
-            border-left: 4px solid #6C4DFF;
-            transition: all 0.2s;
-        }
-
-        .task-item.completed {
-            opacity: 0.5;
-            border-left-color: #00C853;
-        }
-
-        .task-content {
-            flex: 1;
-        }
-
-        .task-title {
-            font-weight: 500;
-            margin-bottom: 4px;
-        }
-
-        .task-assignee {
-            font-size: 12px;
-            color: #6C4DFF;
-        }
-
-        .task-actions {
-            display: flex;
-            gap: 8px;
-        }
-
-        .notification-badge {
-            position: fixed;
-            top: 20px;
-            right: 20px;
-            background: #6C4DFF;
-            color: white;
-            padding: 12px 20px;
-            border-radius: 30px;
-            font-size: 14px;
-            z-index: 1000;
-            animation: slideIn 0.3s;
-            box-shadow: 0 4px 20px rgba(108, 77, 255, 0.4);
-        }
-
-        @keyframes slideIn {
-            from { transform: translateX(100%); opacity: 0; }
-            to { transform: translateX(0); opacity: 1; }
-        }
-
-        .qr-container {
-            margin-top: 16px;
-            text-align: center;
-        }
-
-        #connection-link-input {
-            width: 100%;
-            padding: 12px;
-            background: rgba(0,0,0,0.3);
-            border: 1px solid rgba(255,255,255,0.2);
-            border-radius: 25px;
-            color: white;
-            font-size: 12px;
-            margin-bottom: 10px;
-        }
-
-        .toast {
-            position: fixed;
-            bottom: 20px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #333;
-            color: white;
-            padding: 12px 24px;
-            border-radius: 30px;
-            font-size: 14px;
-            z-index: 1000;
-        }
-
-        .hidden {
-            display: none !important;
-        }
-
-        .flex-row {
-            display: flex;
-            gap: 10px;
-            flex-wrap: wrap;
-        }
-
-        .mt-4 {
-            margin-top: 16px;
-        }
+        *{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:system-ui,sans-serif;background:#0A0A0A;min-height:100vh;color:#FFF;padding:16px}
+        .app{max-width:600px;margin:0 auto}
+        h1{background:linear-gradient(135deg,#6C4DFF,#00D2FF);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:20px}
+        .panel{background:rgba(255,255,255,0.05);border-radius:20px;padding:20px;margin-bottom:20px;border:1px solid rgba(255,255,255,0.1)}
+        .btn{background:#6C4DFF;color:white;border:none;padding:12px 20px;border-radius:25px;cursor:pointer;margin:5px;font-size:14px}
+        .btn-secondary{background:rgba(255,255,255,0.1);border:1px solid rgba(255,255,255,0.2)}
+        .task-input{width:100%;padding:12px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.2);border-radius:25px;color:white;margin-bottom:10px}
+        .task-item{display:flex;justify-content:space-between;padding:12px;background:rgba(255,255,255,0.03);border-radius:12px;margin-bottom:8px}
+        .member-item{display:flex;justify-content:space-between;padding:8px;background:rgba(255,255,255,0.05);border-radius:8px;margin-bottom:5px}
+        .status-dot{width:10px;height:10px;border-radius:50%;background:#FF6D00;display:inline-block}
+        .status-dot.connected{background:#00C853}
+        #session-link{width:100%;padding:10px;background:#000;border:1px solid #6C4DFF;border-radius:10px;color:#6C4DFF;margin:10px 0;font-size:12px}
+        .hidden{display:none}
+        .notification{position:fixed;top:20px;right:20px;background:#6C4DFF;padding:15px 25px;border-radius:30px;animation:slideIn 0.3s;z-index:1000}
+        .install-banner{background:#6C4DFF;padding:15px;border-radius:15px;margin-bottom:15px;display:flex;justify-content:space-between;align-items:center}
+        @keyframes slideIn{from{transform:translateX(100%)}to{transform:translateX(0)}}
     </style>
 </head>
 <body>
     <div class="app">
-        <header>
-            <h1>👥 Team Tasks</h1>
-            <div class="device-badge" id="device-name-display">📱 Cargando...</div>
-        </header>
-
-        <main>
-            <!-- Panel de Conexión P2P -->
-            <div class="connection-panel">
-                <div class="team-section">
-                    <h3>🔄 Miembros del Equipo</h3>
-                    <div class="member-list" id="member-list">
-                        <div class="member-item">
-                            <div class="member-info">
-                                <div class="member-avatar" id="my-avatar">👤</div>
-                                <div>
-                                    <div class="member-name" id="my-name">Yo</div>
-                                    <div class="member-status">Este dispositivo</div>
-                                </div>
-                            </div>
-                            <span class="status-dot connected"></span>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="flex-row">
-                    <button class="btn" id="create-session-btn">🔗 Crear Sesión</button>
-                    <button class="btn btn-secondary" id="join-session-btn">📥 Unirse a Sesión</button>
-                    <button class="btn btn-secondary" id="set-name-btn">✏️ Cambiar Nombre</button>
-                </div>
-
-                <div id="session-info" class="hidden mt-4">
-                    <input type="text" id="connection-link-input" readonly placeholder="Link de conexión...">
-                    <button class="btn btn-small" onclick="window.copyConnectionLink()">📋 Copiar Link</button>
-                    <button class="btn btn-small" onclick="window.shareConnectionLink()">📤 Compartir</button>
+        <h1>👥 Team Tasks P2P</h1>
+        
+        <!-- Banner de instalación PWA -->
+        <div id="install-banner" class="install-banner hidden">
+            <span>📲 Instalar como app</span>
+            <button class="btn" id="install-btn" style="background:white;color:#6C4DFF">Instalar</button>
+        </div>
+        
+        <div class="panel">
+            <h3>🔗 Conexión P2P</h3>
+            <div id="members-list">
+                <div class="member-item">
+                    <span>👤 <span id="my-name-display">Yo</span> (Tú)</span>
+                    <span class="status-dot connected"></span>
                 </div>
             </div>
-
-            <!-- Panel de Tareas -->
-            <div class="tasks-section">
-                <h2 style="margin-bottom: 16px;">📋 Tareas del Equipo</h2>
-                
-                <div class="task-form">
-                    <input type="text" class="task-input" id="task-input" placeholder="Nueva tarea...">
-                    <select class="task-select" id="assignee-select">
-                        <option value="">Asignar a...</option>
-                    </select>
-                    <button class="btn" id="add-task-btn">➕</button>
-                </div>
-
-                <div class="task-list" id="task-list">
-                    <p style="color: #666; text-align: center;">No hay tareas aún</p>
-                </div>
+            <div id="peers-container"></div>
+            
+            <button class="btn" id="create-session-btn">🔗 Crear Sesión</button>
+            <button class="btn btn-secondary" id="join-session-btn">📥 Unirse a Sesión</button>
+            <button class="btn btn-secondary" id="change-name-btn">✏️ Cambiar Nombre</button>
+            
+            <div id="session-info" class="hidden">
+                <p>📤 Comparte este link:</p>
+                <input type="text" id="session-link" readonly>
+                <button class="btn btn-secondary" id="copy-link-btn">📋 Copiar</button>
+                <button class="btn btn-secondary" id="share-link-btn">📤 Compartir</button>
             </div>
-        </main>
+        </div>
+        
+        <div class="panel">
+            <h3>📋 Tareas</h3>
+            <input type="text" class="task-input" id="task-input" placeholder="Nueva tarea...">
+            <select id="assignee-select" style="width:100%;padding:10px;background:#000;color:white;border-radius:25px;margin-bottom:10px">
+                <option value="">Asignar a...</option>
+            </select>
+            <button class="btn" id="add-task-btn">➕ Añadir Tarea</button>
+            
+            <div id="task-list" style="margin-top:20px">
+                <p style="color:#666;text-align:center">No hay tareas</p>
+            </div>
+        </div>
     </div>
 
     <script>
         // ================================================================
-        // J3W TEAM TASKS - SISTEMA COLABORATIVO P2P
+        // PWA MANIFEST (Generado dinámicamente)
+        // ================================================================
+        const manifest = {
+            name: "Team Tasks P2P",
+            short_name: "TeamTasks",
+            description: "Asignación de tareas en tiempo real sin servidor",
+            theme_color: "#0A0A0A",
+            background_color: "#0A0A0A",
+            display: "standalone",
+            orientation: "portrait",
+            scope: "/",
+            start_url: "/",
+            icons: [
+                {
+                    src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230A0A0A'/%3E%3Ctext x='50' y='65' font-size='45' text-anchor='middle' fill='%236C4DFF'%3E👥%3C/text%3E%3C/svg%3E",
+                    sizes: "192x192",
+                    type: "image/svg+xml"
+                },
+                {
+                    src: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' fill='%230A0A0A'/%3E%3Ctext x='50' y='65' font-size='45' text-anchor='middle' fill='%236C4DFF'%3E👥%3C/text%3E%3C/svg%3E",
+                    sizes: "512x512",
+                    type: "image/svg+xml"
+                }
+            ]
+        };
+        
+        const manifestBlob = new Blob([JSON.stringify(manifest)], { type: 'application/manifest+json' });
+        const manifestURL = URL.createObjectURL(manifestBlob);
+        document.getElementById('manifest-placeholder').href = manifestURL;
+        
+        // ================================================================
+        // SERVICE WORKER (Para que funcione como PWA)
+        // ================================================================
+        if ('serviceWorker' in navigator) {
+            const swCode = `
+                self.addEventListener('install', (e) => {
+                    console.log('📦 SW: Instalado');
+                    e.waitUntil(self.skipWaiting());
+                });
+                self.addEventListener('activate', (e) => {
+                    console.log('✅ SW: Activado');
+                    e.waitUntil(self.clients.claim());
+                });
+                self.addEventListener('fetch', (e) => {
+                    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
+                });
+            `;
+            const swBlob = new Blob([swCode], { type: 'application/javascript' });
+            const swURL = URL.createObjectURL(swBlob);
+            navigator.serviceWorker.register(swURL, { scope: '/' })
+                .then(() => console.log('✅ SW registrado'));
+        }
+        
+        // ================================================================
+        // INSTALACIÓN PWA
+        // ================================================================
+        let deferredPrompt = null;
+        
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            document.getElementById('install-banner').classList.remove('hidden');
+        });
+        
+        document.getElementById('install-btn').addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                const { outcome } = await deferredPrompt.userChoice;
+                console.log(`📲 Instalación: ${outcome}`);
+                deferredPrompt = null;
+                document.getElementById('install-banner').classList.add('hidden');
+            }
+        });
+        
+        // Detectar si ya está instalada
+        if (window.matchMedia('(display-mode: standalone)').matches) {
+            console.log('✅ Ejecutando como PWA instalada');
+        }
+        
+        // ================================================================
+        // ESTADO PERSISTENTE (SOLUCIÓN AL PROBLEMA DEL NOMBRE QUE CAMBIA)
         // ================================================================
         
-        (function() {
-            'use strict';
+        // Obtener o crear ID persistente
+        let myId = localStorage.getItem('p2p-persistent-id');
+        if (!myId) {
+            myId = 'device-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9);
+            localStorage.setItem('p2p-persistent-id', myId);
+        }
+        console.log('🆔 ID Persistente:', myId);
+        
+        // Obtener o crear nombre persistente
+        let myName = localStorage.getItem('p2p-persistent-name');
+        if (!myName) {
+            myName = 'Usuario' + Math.floor(Math.random() * 1000);
+            localStorage.setItem('p2p-persistent-name', myName);
+        }
+        
+        // Estado
+        let peerConnection = null;
+        let dataChannel = null;
+        const peers = new Map();
+        let tasks = [];
+        
+        // Cargar tareas guardadas localmente
+        const savedTasks = localStorage.getItem('p2p-tasks');
+        if (savedTasks) {
+            try {
+                tasks = JSON.parse(savedTasks);
+            } catch(e) {}
+        }
+        
+        // Guardar tareas cuando cambien
+        function saveTasks() {
+            localStorage.setItem('p2p-tasks', JSON.stringify(tasks));
+        }
+        
+        // UI Elements
+        const membersDiv = document.getElementById('peers-container');
+        const sessionInfo = document.getElementById('session-info');
+        const sessionLink = document.getElementById('session-link');
+        const taskList = document.getElementById('task-list');
+        const assigneeSelect = document.getElementById('assignee-select');
+        
+        document.getElementById('my-name-display').textContent = myName;
+        
+        // ================================================================
+        // CREAR SESIÓN
+        // ================================================================
+        
+        async function createSession() {
+            console.log('🔄 Creando sesión...');
             
-            // Estado de la aplicación
-            const state = {
-                myName: 'Usuario ' + Math.floor(Math.random() * 1000),
-                myId: 'device-' + Date.now() + '-' + Math.random().toString(36).substr(2, 9),
-                peers: new Map(), // peerId -> { connection, dataChannel, name, color }
-                tasks: [],
-                peerConnection: null
+            peerConnection = new RTCPeerConnection({
+                iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
+            });
+            
+            dataChannel = peerConnection.createDataChannel('tasks');
+            setupDataChannel(dataChannel);
+            
+            peerConnection.ondatachannel = (event) => {
+                console.log('📥 Canal entrante recibido');
+                setupDataChannel(event.channel);
             };
             
-            // Cargar nombre guardado
-            const savedName = localStorage.getItem('teamTasksName');
-            if (savedName) state.myName = savedName;
+            const offer = await peerConnection.createOffer();
+            await peerConnection.setLocalDescription(offer);
             
-            // ================================================================
-            // UI Helpers
-            // ================================================================
-            
-            function updateUI() {
-                document.getElementById('device-name-display').textContent = `📱 ${state.myName}`;
-                document.getElementById('my-name').textContent = state.myName;
-                document.getElementById('my-avatar').textContent = state.myName[0].toUpperCase();
-                
-                renderMemberList();
-                renderAssigneeSelect();
-                renderTaskList();
-            }
-            
-            function renderMemberList() {
-                const container = document.getElementById('member-list');
-                const myItem = container.children[0];
-                
-                let html = '';
-                state.peers.forEach((peer, peerId) => {
-                    html += `
-                        <div class="member-item">
-                            <div class="member-info">
-                                <div class="member-avatar" style="background: ${peer.color}20; color: ${peer.color}">
-                                    ${(peer.name || 'Usuario')[0].toUpperCase()}
-                                </div>
-                                <div>
-                                    <div class="member-name">${peer.name || 'Usuario'}</div>
-                                    <div class="member-status">${peer.connection ? 'Conectado' : 'Conectando...'}</div>
-                                </div>
-                            </div>
-                            <span class="status-dot ${peer.connection ? 'connected' : ''}"></span>
-                        </div>
-                    `;
-                });
-                
-                container.innerHTML = myItem.outerHTML + html;
-            }
-            
-            function renderAssigneeSelect() {
-                const select = document.getElementById('assignee-select');
-                let options = '<option value="">Asignar a...</option>';
-                options += `<option value="${state.myId}">${state.myName} (Yo)</option>`;
-                
-                state.peers.forEach((peer, peerId) => {
-                    options += `<option value="${peerId}">${peer.name || 'Usuario'}</option>`;
-                });
-                
-                select.innerHTML = options;
-            }
-            
-            function renderTaskList() {
-                const container = document.getElementById('task-list');
-                
-                if (state.tasks.length === 0) {
-                    container.innerHTML = '<p style="color: #666; text-align: center;">No hay tareas aún</p>';
-                    return;
-                }
-                
-                container.innerHTML = state.tasks.map(task => {
-                    const assigneeName = getAssigneeName(task.assigneeId);
-                    const isMyTask = task.assigneeId === state.myId;
-                    const completed = task.completed ? 'completed' : '';
+            const candidates = [];
+            peerConnection.onicecandidate = (event) => {
+                if (event.candidate) {
+                    candidates.push(event.candidate);
+                } else {
+                    const sessionData = {
+                        sdp: peerConnection.localDescription,
+                        candidates: candidates
+                    };
                     
-                    return `
-                        <div class="task-item ${completed}" data-task-id="${task.id}">
-                            <div class="task-content">
-                                <div class="task-title">${escapeHtml(task.title)}</div>
-                                <div class="task-assignee">👤 ${assigneeName}</div>
-                                <div style="font-size: 11px; color: #888; margin-top: 4px;">
-                                    📅 ${new Date(task.createdAt).toLocaleTimeString()}
-                                </div>
-                            </div>
-                            <div class="task-actions">
-                                ${isMyTask && !task.completed ? 
-                                    `<button class="btn btn-small" onclick="window.completeTask('${task.id}')">✅</button>` : ''}
-                                <button class="btn btn-small btn-secondary" onclick="window.deleteTask('${task.id}')">🗑️</button>
-                            </div>
-                        </div>
-                    `;
-                }).join('');
-            }
-            
-            function escapeHtml(text) {
-                const div = document.createElement('div');
-                div.textContent = text;
-                return div.innerHTML;
-            }
-            
-            function getAssigneeName(assigneeId) {
-                if (assigneeId === state.myId) return state.myName;
-                const peer = state.peers.get(assigneeId);
-                return peer ? peer.name : 'Desconocido';
-            }
-            
-            function showNotification(message) {
-                const notification = document.createElement('div');
-                notification.className = 'notification-badge';
-                notification.textContent = message;
-                document.body.appendChild(notification);
-                setTimeout(() => notification.remove(), 3000);
-            }
-            
-            function showToast(message) {
-                const toast = document.createElement('div');
-                toast.className = 'toast';
-                toast.textContent = message;
-                document.body.appendChild(toast);
-                setTimeout(() => toast.remove(), 2000);
-            }
-            
-            // ================================================================
-            // Gestión de Tareas
-            // ================================================================
-            
-            function addTask(title, assigneeId) {
-                const task = {
-                    id: 'task-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5),
-                    title: title,
-                    assigneeId: assigneeId,
-                    createdBy: state.myId,
-                    createdAt: new Date().toISOString(),
-                    completed: false
-                };
-                
-                state.tasks.push(task);
-                renderTaskList();
-                
-                // Enviar a todos los peers
-                broadcastToPeers({
-                    type: 'NEW_TASK',
-                    task: task
-                });
-                
-                // Notificar si es para alguien más
-                if (assigneeId !== state.myId) {
-                    const assignee = state.peers.get(assigneeId);
-                    if (assignee) {
-                        showToast(`📤 Tarea asignada a ${assignee.name}`);
-                    }
-                }
-                
-                return task;
-            }
-            
-            window.completeTask = function(taskId) {
-                const task = state.tasks.find(t => t.id === taskId);
-                if (task) {
-                    task.completed = true;
-                    renderTaskList();
+                    const encoded = btoa(JSON.stringify(sessionData));
+                    const link = window.location.origin + window.location.pathname + '?join=' + encoded;
                     
-                    broadcastToPeers({
-                        type: 'COMPLETE_TASK',
-                        taskId: taskId
-                    });
+                    sessionLink.value = link;
+                    sessionInfo.classList.remove('hidden');
                     
-                    showToast('✅ Tarea completada');
+                    console.log('✅ Sesión creada');
+                    showNotification('🔗 Sesión creada. Comparte el link');
                 }
             };
+        }
+        
+        // ================================================================
+        // UNIRSE A SESIÓN
+        // ================================================================
+        
+        async function joinSession(encodedData) {
+            console.log('🔄 Uniéndose a sesión...');
             
-            window.deleteTask = function(taskId) {
-                state.tasks = state.tasks.filter(t => t.id !== taskId);
-                renderTaskList();
+            try {
+                const sessionData = JSON.parse(atob(encodedData));
                 
-                broadcastToPeers({
-                    type: 'DELETE_TASK',
-                    taskId: taskId
-                });
-                
-                showToast('🗑️ Tarea eliminada');
-            };
-            
-            // ================================================================
-            // WebRTC P2P
-            // ================================================================
-            
-            const colors = ['#6C4DFF', '#00D2FF', '#FF6D00', '#00C853', '#FF4081', '#FFD600'];
-            
-            async function createSession() {
-                state.peerConnection = new RTCPeerConnection({
+                peerConnection = new RTCPeerConnection({
                     iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
                 });
                 
-                // Manejar nuevas conexiones entrantes
-                state.peerConnection.ondatachannel = (event) => {
-                    const dataChannel = event.channel;
-                    setupDataChannel(dataChannel);
+                dataChannel = peerConnection.createDataChannel('tasks');
+                setupDataChannel(dataChannel);
+                
+                peerConnection.ondatachannel = (event) => {
+                    console.log('📥 Canal entrante recibido');
+                    setupDataChannel(event.channel);
                 };
                 
-                const offer = await state.peerConnection.createOffer();
-                await state.peerConnection.setLocalDescription(offer);
+                await peerConnection.setRemoteDescription(sessionData.sdp);
                 
-                const candidates = [];
-                state.peerConnection.onicecandidate = (event) => {
-                    if (event.candidate) {
-                        candidates.push(event.candidate);
-                    } else {
-                        const sessionData = {
-                            sdp: state.peerConnection.localDescription,
-                            candidates: candidates,
-                            initiator: state.myId
-                        };
-                        
-                        const encoded = btoa(JSON.stringify(sessionData));
-                        const link = `${window.location.origin}${window.location.pathname}?session=${encoded}`;
-                        
-                        document.getElementById('connection-link-input').value = link;
-                        document.getElementById('session-info').classList.remove('hidden');
-                        
-                        showToast('🔗 Sesión creada. Comparte el link con tu equipo');
-                    }
-                };
+                sessionData.candidates.forEach(c => {
+                    peerConnection.addIceCandidate(new RTCIceCandidate(c));
+                });
+                
+                const answer = await peerConnection.createAnswer();
+                await peerConnection.setLocalDescription(answer);
+                
+                console.log('✅ Conectado a la sesión');
+                showNotification('✅ Conectado al equipo');
+                
+            } catch(e) {
+                console.error('Error al unirse:', e);
+                alert('Error al unirse: ' + e.message);
             }
+        }
+        
+        // ================================================================
+        // CONFIGURAR DATA CHANNEL
+        // ================================================================
+        
+        function setupDataChannel(channel) {
+            const peerId = 'peer-' + Date.now() + '-' + Math.random().toString(36);
             
-            async function joinSession(sessionLink) {
-                try {
-                    const url = new URL(sessionLink);
-                    const encoded = url.searchParams.get('session');
-                    if (!encoded) throw new Error('Link inválido');
-                    
-                    const sessionData = JSON.parse(atob(encoded));
-                    
-                    state.peerConnection = new RTCPeerConnection({
-                        iceServers: [{ urls: 'stun:stun.l.google.com:19302' }]
-                    });
-                    
-                    // Crear data channel para el iniciador
-                    const dataChannel = state.peerConnection.createDataChannel('tasks');
-                    setupDataChannel(dataChannel);
-                    
-                    await state.peerConnection.setRemoteDescription(sessionData.sdp);
-                    
-                    sessionData.candidates.forEach(candidate => {
-                        state.peerConnection.addIceCandidate(new RTCIceCandidate(candidate));
-                    });
-                    
-                    const answer = await state.peerConnection.createAnswer();
-                    await state.peerConnection.setLocalDescription(answer);
-                    
-                    showToast('✅ Conectado a la sesión');
-                    document.getElementById('session-info').classList.add('hidden');
-                    
-                } catch (error) {
-                    alert('Error al unirse: ' + error.message);
-                }
-            }
-            
-            function setupDataChannel(channel) {
-                const peerId = 'peer-' + Date.now() + '-' + Math.random().toString(36).substr(2, 5);
-                const color = colors[state.peers.size % colors.length];
+            channel.onopen = () => {
+                console.log('📡 Canal abierto');
                 
-                const peer = {
-                    connection: state.peerConnection,
-                    dataChannel: channel,
-                    name: 'Usuario',
-                    color: color
-                };
+                channel.send(JSON.stringify({
+                    type: 'info',
+                    peerId: myId,
+                    name: myName
+                }));
                 
-                state.peers.set(peerId, peer);
-                
-                channel.onopen = () => {
-                    console.log('📡 Canal abierto con', peerId);
-                    
-                    // Enviar mi información
+                if (tasks.length > 0) {
                     channel.send(JSON.stringify({
-                        type: 'PEER_INFO',
-                        peerId: peerId,
-                        name: state.myName,
-                        color: color,
-                        existingTasks: state.tasks
+                        type: 'sync',
+                        tasks: tasks
                     }));
-                    
-                    updateUI();
-                };
-                
-                channel.onmessage = (event) => {
-                    const message = JSON.parse(event.data);
-                    handlePeerMessage(peerId, message);
-                };
-                
-                channel.onclose = () => {
-                    state.peers.delete(peerId);
-                    updateUI();
-                    showToast(`👋 ${peer.name} se desconectó`);
-                };
-            }
-            
-            function handlePeerMessage(peerId, message) {
-                const peer = state.peers.get(peerId);
-                
-                switch (message.type) {
-                    case 'PEER_INFO':
-                        if (peer) {
-                            peer.name = message.name;
-                            peer.color = message.color;
-                        }
-                        if (message.existingTasks) {
-                            mergeTasks(message.existingTasks);
-                        }
-                        updateUI();
-                        showNotification(`👋 ${message.name} se conectó`);
-                        break;
-                        
-                    case 'NEW_TASK':
-                        const existingTask = state.tasks.find(t => t.id === message.task.id);
-                        if (!existingTask) {
-                            state.tasks.push(message.task);
-                            renderTaskList();
-                            
-                            if (message.task.assigneeId === state.myId) {
-                                showNotification(`📋 Nueva tarea: ${message.task.title}`);
-                            }
-                        }
-                        break;
-                        
-                    case 'COMPLETE_TASK':
-                        const taskToComplete = state.tasks.find(t => t.id === message.taskId);
-                        if (taskToComplete) {
-                            taskToComplete.completed = true;
-                            renderTaskList();
-                        }
-                        break;
-                        
-                    case 'DELETE_TASK':
-                        state.tasks = state.tasks.filter(t => t.id !== message.taskId);
-                        renderTaskList();
-                        break;
                 }
-            }
-            
-            function broadcastToPeers(message) {
-                state.peers.forEach(peer => {
-                    if (peer.dataChannel && peer.dataChannel.readyState === 'open') {
-                        peer.dataChannel.send(JSON.stringify(message));
-                    }
-                });
-            }
-            
-            function mergeTasks(externalTasks) {
-                externalTasks.forEach(extTask => {
-                    const exists = state.tasks.find(t => t.id === extTask.id);
-                    if (!exists) {
-                        state.tasks.push(extTask);
-                    }
-                });
-                renderTaskList();
-            }
-            
-            // ================================================================
-            // Helpers para compartir
-            // ================================================================
-            
-            window.copyConnectionLink = function() {
-                const input = document.getElementById('connection-link-input');
-                input.select();
-                document.execCommand('copy');
-                showToast('📋 Link copiado');
+                
+                updateMembersList();
             };
             
-            window.shareConnectionLink = async function() {
-                const link = document.getElementById('connection-link-input').value;
+            channel.onmessage = (event) => {
+                const msg = JSON.parse(event.data);
                 
-                if (navigator.share) {
-                    try {
-                        await navigator.share({
-                            title: 'Unirse a Team Tasks',
-                            text: `Únete a mi sesión de Team Tasks`,
-                            url: link
-                        });
-                    } catch (e) {
-                        // Usuario canceló
-                    }
-                } else {
-                    copyConnectionLink();
-                }
-            };
-            
-            // ================================================================
-            // Event Listeners
-            // ================================================================
-            
-            document.getElementById('create-session-btn').addEventListener('click', createSession);
-            
-            document.getElementById('join-session-btn').addEventListener('click', () => {
-                const link = prompt('Pega el link de la sesión:');
-                if (link) joinSession(link);
-            });
-            
-            document.getElementById('set-name-btn').addEventListener('click', () => {
-                const newName = prompt('¿Cómo te llamas?', state.myName);
-                if (newName) {
-                    state.myName = newName;
-                    localStorage.setItem('teamTasksName', newName);
-                    updateUI();
+                if (msg.type === 'info') {
+                    peers.set(msg.peerId, { channel, name: msg.name });
+                    updateMembersList();
+                    updateAssigneeSelect();
+                    showNotification(`👋 ${msg.name} se conectó`);
                     
-                    // Notificar a peers
-                    broadcastToPeers({
-                        type: 'PEER_INFO',
-                        name: newName
+                } else if (msg.type === 'new-task') {
+                    if (!tasks.find(t => t.id === msg.task.id)) {
+                        tasks.push(msg.task);
+                        saveTasks();
+                        renderTasks();
+                        if (msg.task.assigneeId === myId) {
+                            showNotification(`📋 Nueva tarea: ${msg.task.title}`);
+                        }
+                    }
+                    
+                } else if (msg.type === 'complete-task') {
+                    const task = tasks.find(t => t.id === msg.taskId);
+                    if (task) {
+                        task.completed = true;
+                        saveTasks();
+                        renderTasks();
+                    }
+                    
+                } else if (msg.type === 'sync') {
+                    msg.tasks.forEach(t => {
+                        if (!tasks.find(ex => ex.id === t.id)) {
+                            tasks.push(t);
+                        }
                     });
+                    saveTasks();
+                    renderTasks();
+                }
+            };
+            
+            channel.onclose = () => {
+                peers.delete(peerId);
+                updateMembersList();
+                updateAssigneeSelect();
+            };
+            
+            peers.set(peerId, { channel, name: 'Conectando...' });
+        }
+        
+        function broadcast(msg) {
+            peers.forEach(peer => {
+                if (peer.channel.readyState === 'open') {
+                    peer.channel.send(JSON.stringify(msg));
                 }
             });
-            
-            document.getElementById('add-task-btn').addEventListener('click', () => {
-                const input = document.getElementById('task-input');
-                const select = document.getElementById('assignee-select');
-                const title = input.value.trim();
-                const assigneeId = select.value;
-                
-                if (!title) {
-                    alert('Escribe una tarea');
-                    return;
-                }
-                
-                addTask(title, assigneeId || state.myId);
-                input.value = '';
+        }
+        
+        function updateMembersList() {
+            let html = '';
+            peers.forEach((peer, id) => {
+                html += `<div class="member-item">
+                    <span>👤 ${peer.name}</span>
+                    <span class="status-dot ${peer.channel.readyState === 'open' ? 'connected' : ''}"></span>
+                </div>`;
             });
-            
-            // Verificar si venimos de un link de sesión
-            const params = new URLSearchParams(window.location.search);
-            if (params.has('session')) {
-                const sessionLink = window.location.href;
-                if (confirm('¿Unirse a esta sesión de equipo?')) {
-                    joinSession(sessionLink);
-                }
-                window.history.replaceState({}, document.title, window.location.pathname);
+            membersDiv.innerHTML = html;
+        }
+        
+        function updateAssigneeSelect() {
+            let options = '<option value="">Asignar a...</option>';
+            options += `<option value="${myId}">${myName} (Yo)</option>`;
+            peers.forEach((peer, id) => {
+                options += `<option value="${id}">${peer.name}</option>`;
+            });
+            assigneeSelect.innerHTML = options;
+        }
+        
+        function renderTasks() {
+            if (tasks.length === 0) {
+                taskList.innerHTML = '<p style="color:#666;text-align:center">No hay tareas</p>';
+                return;
             }
             
-            // Inicializar UI
-            updateUI();
+            taskList.innerHTML = tasks.map(task => {
+                const assigneeName = task.assigneeId === myId ? myName : 
+                                   (peers.get(task.assigneeId)?.name || 'Desconocido');
+                return `<div class="task-item" style="opacity:${task.completed?0.5:1}">
+                    <div>
+                        <div>${task.title}</div>
+                        <small style="color:#6C4DFF">👤 ${assigneeName}</small>
+                    </div>
+                    <div>
+                        ${task.assigneeId === myId && !task.completed ? 
+                            `<button class="btn btn-secondary" style="padding:5px 10px" onclick="completeTask('${task.id}')">✅</button>` : ''}
+                    </div>
+                </div>`;
+            }).join('');
+        }
+        
+        function addTask(title, assigneeId) {
+            const task = {
+                id: 'task-' + Date.now() + '-' + Math.random().toString(36),
+                title: title,
+                assigneeId: assigneeId || myId,
+                completed: false
+            };
             
-            // Ejemplo de tareas iniciales
-            addTask('Revisar el sistema de tareas', state.myId);
+            tasks.push(task);
+            saveTasks();
+            renderTasks();
             
-        })();
+            broadcast({
+                type: 'new-task',
+                task: task
+            });
+        }
+        
+        window.completeTask = function(taskId) {
+            const task = tasks.find(t => t.id === taskId);
+            if (task) {
+                task.completed = true;
+                saveTasks();
+                renderTasks();
+                broadcast({
+                    type: 'complete-task',
+                    taskId: taskId
+                });
+            }
+        };
+        
+        function showNotification(msg) {
+            const n = document.createElement('div');
+            n.className = 'notification';
+            n.textContent = msg;
+            document.body.appendChild(n);
+            setTimeout(() => n.remove(), 3000);
+        }
+        
+        // ================================================================
+        // SHARE LINK (Usa Web Share API si está disponible)
+        // ================================================================
+        
+        async function shareLink() {
+            const link = sessionLink.value;
+            if (navigator.share) {
+                try {
+                    await navigator.share({
+                        title: 'Unirse a Team Tasks',
+                        text: 'Únete a mi sesión de tareas',
+                        url: link
+                    });
+                } catch(e) {}
+            } else {
+                sessionLink.select();
+                document.execCommand('copy');
+                showNotification('📋 Link copiado');
+            }
+        }
+        
+        // ================================================================
+        // EVENT LISTENERS
+        // ================================================================
+        
+        document.getElementById('create-session-btn').addEventListener('click', createSession);
+        
+        document.getElementById('join-session-btn').addEventListener('click', () => {
+            const link = prompt('Pega el link de la sesión:');
+            if (link) {
+                const url = new URL(link);
+                const encoded = url.searchParams.get('join');
+                if (encoded) joinSession(encoded);
+            }
+        });
+        
+        document.getElementById('change-name-btn').addEventListener('click', () => {
+            const newName = prompt('Tu nombre:', myName);
+            if (newName) {
+                myName = newName;
+                localStorage.setItem('p2p-persistent-name', newName);
+                document.getElementById('my-name-display').textContent = myName;
+                updateAssigneeSelect();
+                
+                // Notificar a peers del cambio de nombre
+                broadcast({
+                    type: 'info',
+                    peerId: myId,
+                    name: myName
+                });
+            }
+        });
+        
+        document.getElementById('copy-link-btn').addEventListener('click', () => {
+            sessionLink.select();
+            document.execCommand('copy');
+            showNotification('📋 Link copiado');
+        });
+        
+        document.getElementById('share-link-btn').addEventListener('click', shareLink);
+        
+        document.getElementById('add-task-btn').addEventListener('click', () => {
+            const input = document.getElementById('task-input');
+            const title = input.value.trim();
+            if (title) {
+                addTask(title, assigneeSelect.value);
+                input.value = '';
+            }
+        });
+        
+        // Verificar link en URL
+        const params = new URLSearchParams(window.location.search);
+        if (params.has('join')) {
+            if (confirm('¿Unirse a esta sesión?')) {
+                joinSession(params.get('join'));
+            }
+            window.history.replaceState({}, document.title, window.location.pathname);
+        }
+        
+        // Inicializar UI
+        updateAssigneeSelect();
+        renderTasks();
+        
+        console.log('✅ Sistema listo. ID persistente:', myId);
+        console.log('📱 PWA lista para instalar');
+        
     </script>
 </body>
 </html>
